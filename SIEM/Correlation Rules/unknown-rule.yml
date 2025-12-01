@@ -1,0 +1,26 @@
+name: null
+status: null
+description: null
+references: null
+author:
+  by: null
+  date: null
+modified:
+  by: null
+  date: null
+tags: null
+log_source:
+  vendor: null
+  service: null
+detection:
+  query:
+    before: null
+    after: null
+  condition: null
+  suppress: null
+severity: null
+outcome: null
+review:
+  last_reviewed: null
+  next_review: null
+expiry_date: null
