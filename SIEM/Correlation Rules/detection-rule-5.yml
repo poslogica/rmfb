@@ -1,0 +1,26 @@
+name: Detection Rule 5
+status: null
+description: null
+references: null
+author:
+  by: null
+  date: null
+modified:
+  by: FB Mod User 1
+  date: "2025-12-01"
+tags: null
+log_source:
+  vendor: null
+  service: null
+detection:
+  query:
+    before: Query 123
+    after: Query 456
+  condition: null
+  suppress: null
+severity: null
+outcome: null
+review:
+  last_reviewed: "2025-12-01"
+  next_review: "2026-12-01"
+expiry_date: null
