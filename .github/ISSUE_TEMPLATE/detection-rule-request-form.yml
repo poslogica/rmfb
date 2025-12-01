@@ -53,16 +53,25 @@ body:
       required: false
 
   - type: input
-    id: author
+    id: author-by
     attributes:
-      label: Author
+      label: Author By
       description: Enter your name or GitHub username
       placeholder: Your name
     validations:
       required: true
 
   - type: input
-    id: modified
+    id: author-date
+    attributes:
+      label: Author Date
+      description: Enter the date the rule was created (this should only be set once and never modified)
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+
+  - type: input
+    id: modified-by
     attributes:
       label: Modified By
       description: Enter the name of the user modifying an existing rule (leave empty if not applicable)
@@ -71,13 +80,13 @@ body:
       required: false
 
   - type: input
-    id: date-created
+    id: modified-date
     attributes:
-      label: Date Created
-      description: Enter the date the rule was created (this should only be set once and never modified)
-      placeholder: YYYY-MM-DD
+      label: Modified Date
+      description: Enter the date the rule was modified (leave empty if not applicable)
+      placeholder: Leave empty for NULL
     validations:
-      required: true
+      required: false      
 
   - type: textarea
     id: tags
