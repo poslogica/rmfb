@@ -4,6 +4,11 @@ on:
   issues:
     types: [opened, edited]
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   extract-and-process:
     if: contains(github.event.issue.labels.*.name, 'detection-rule')
@@ -133,6 +138,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Add detection rule: ${{ steps.extract.outputs.rule-name }}"
           title: "Detection Rule: ${{ steps.extract.outputs.rule-name }}"
           body: |
