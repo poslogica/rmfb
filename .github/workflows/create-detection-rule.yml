@@ -142,7 +142,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Add detection rule: ${{ steps.extract.outputs.rule-name }}"
-          title: "Detection Rule: ${{ steps.extract.outputs.rule-name }}"
+          title: "Create Detection Rule: ${{ steps.extract.outputs.rule-name }}"
           body: |
             This PR adds a new detection rule based on issue #${{ github.event.issue.number }}
             

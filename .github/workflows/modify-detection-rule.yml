@@ -173,36 +173,13 @@ jobs:
             detection-rule
             modify
 
-      - name: Show current values and confirm update
+      - name: Comment on issue
         uses: actions/github-script@v7
-        env:
-          RULE_FILE: ${{ steps.extract.outputs.rule-file }}
         with:
           script: |
-            const fs = require('fs');
-            const path = require('path');
-            const rulePath = `SIEM/Correlation Rules/${process.env.RULE_FILE}`;
-            
-            let currentValuesSection = '';
-            if (fs.existsSync(rulePath)) {
-              const currentContent = fs.readFileSync(rulePath, 'utf8');
-              currentValuesSection = `
-            ### Current Rule Values (Before Modification)
-            \`\`\`yaml
-            ${currentContent}
-            \`\`\`
-            `;
-            }
-            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✅ Detection rule has been updated and a pull request has been created. Please review the PR to approve the modifications.
-            
-            ${currentValuesSection}
-            
-            **Next Steps:**
-            - Review the pull request to see the changes
-            - Approve the PR to apply the modifications`
+              body: '✅ Detection rule has been updated and a pull request has been created. Please review the PR to see the proposed modifications.'
             })
