@@ -1,0 +1,112 @@
+name: Detection Rule Request Form
+description: Request a new detection rule or modification to an existing rule
+title: "[DETECTION] "
+labels: ["detection-rule"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to request a detection rule!
+  
+  - type: input
+    id: rule-name
+    attributes:
+      label: Rule Name
+      description: Provide a descriptive name for the detection rule
+      placeholder: e.g., Suspicious PowerShell Execution
+    validations:
+      required: true
+  
+  - type: textarea
+    id: rule-description
+    attributes:
+      label: Rule Description
+      description: Describe what this detection rule should detect
+      placeholder: Provide a detailed description of the detection rule
+    validations:
+      required: true
+  
+  - type: checkboxes
+    id: threat-type
+    attributes:
+      label: Threat Type
+      description: Select the type(s) of threat this rule addresses
+      options:
+        - label: Malware
+        - label: Phishing
+        - label: Data Exfiltration
+        - label: Unauthorized Access
+        - label: Privilege Escalation
+        - label: Lateral Movement
+        - label: Command & Control
+        - label: Other
+    validations:
+      required: true
+  
+  - type: input
+    id: mitre-attack
+    attributes:
+      label: MITRE ATT&CK Mapping
+      description: Provide the MITRE ATT&CK technique ID(s) and tactic(s)
+      placeholder: e.g., T1059.001 - PowerShell, Execution
+    validations:
+      required: false
+  
+  - type: textarea
+    id: data-sources
+    attributes:
+      label: Data Sources
+      description: What data sources should be used?
+      placeholder: e.g., Windows Event Logs, Sysmon, Network Traffic
+    validations:
+      required: true
+  
+  - type: textarea
+    id: detection-criteria
+    attributes:
+      label: Detection Criteria
+      description: Describe the conditions or indicators that should trigger this detection
+      placeholder: Provide specific criteria, patterns, or indicators
+    validations:
+      required: true
+  
+  - type: textarea
+    id: expected-findings
+    attributes:
+      label: Expected Findings
+      description: What should be flagged or alerted on?
+      placeholder: Describe what you expect the rule to detect
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Select the priority level for this detection rule
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+  
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any additional information, references, or context about this detection rule request
+      placeholder: Provide any additional details, links to resources, etc.
+    validations:
+      required: false
+  
+  - type: textarea
+    id: testing-requirements
+    attributes:
+      label: Testing Requirements
+      description: How should this detection rule be tested or validated?
+      placeholder: Describe testing scenarios or validation criteria
+    validations:
+      required: false
