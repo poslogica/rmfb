@@ -76,6 +76,10 @@ jobs:
         env:
           RULE_DATA: ${{ steps.extract.outputs.rule-data }}
         run: |
+          # Install yq for YAML generation
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          
           # Parse the JSON data
           echo "$RULE_DATA" | jq .
           
@@ -85,51 +89,46 @@ jobs:
           # Extract rule name and sanitize for filename
           RULE_NAME=$(echo "$RULE_DATA" | jq -r '.ruleName // "unknown-rule"' | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]//g')
           
-          # Create YAML file with the rule data
-          cat > "SIEM/Rules/${RULE_NAME}.yml" << 'EOF'
-          name: $(echo "$RULE_DATA" | jq -r '.ruleName')
-          status: $(echo "$RULE_DATA" | jq -r '.ruleStatus')
-          description: |
-            $(echo "$RULE_DATA" | jq -r '.ruleDescription')
-          
-          references:
-          $(echo "$RULE_DATA" | jq -r '.references[] | "  - " + .')
-          
-          author:
-            by: $(echo "$RULE_DATA" | jq -r '.authorBy')
-            date: $(echo "$RULE_DATA" | jq -r '.authorDate')
-          
-          modified:
-            by: $(echo "$RULE_DATA" | jq -r '.modifiedBy // "null"')
-            date: $(echo "$RULE_DATA" | jq -r '.modifiedDate // "null"')
-          
-          tags:
-          $(echo "$RULE_DATA" | jq -r '.tags[] | "  - " + .')
-          
-          log_source:
-            vendor: $(echo "$RULE_DATA" | jq -r '.logSourceVendor')
-            service: $(echo "$RULE_DATA" | jq -r '.logSourceService')
-          
-          detection:
-            query:
-              before: |
-                $(echo "$RULE_DATA" | jq -r '.detectionQueryBefore')
-              after: |
-                $(echo "$RULE_DATA" | jq -r '.detectionQueryAfter')
-            condition: $(echo "$RULE_DATA" | jq -r '.detectionQueryCondition')
-            suppress: $(echo "$RULE_DATA" | jq -r '.detectionQuerySuppress // "null"')
-          
-          severity: $(echo "$RULE_DATA" | jq -r '.severity')
-          outcome: $(echo "$RULE_DATA" | jq -r '.outcome')
-          
-          review:
-            last_reviewed: $(echo "$RULE_DATA" | jq -r '.reviewLastReviewed')
-            next_review: $(echo "$RULE_DATA" | jq -r '.reviewNextReview')
-          
-          expiry_date: $(echo "$RULE_DATA" | jq -r '.expiryDate // "null"')
-          EOF
+          # Create proper YAML file using yq
+          echo "$RULE_DATA" | jq '{
+            name: .ruleName,
+            status: .ruleStatus,
+            description: .ruleDescription,
+            references: (if .references | length > 0 then .references else null end),
+            author: {
+              by: .authorBy,
+              date: .authorDate
+            },
+            modified: {
+              by: (.modifiedBy // null),
+              date: (.modifiedDate // null)
+            },
+            tags: (if .tags | length > 0 then .tags else null end),
+            log_source: {
+              vendor: .logSourceVendor,
+              service: .logSourceService
+            },
+            detection: {
+              query: {
+                before: .detectionQueryBefore,
+                after: .detectionQueryAfter
+              },
+              condition: .detectionQueryCondition,
+              suppress: (.detectionQuerySuppress // null)
+            },
+            severity: .severity,
+            outcome: .outcome,
+            review: {
+              last_reviewed: .reviewLastReviewed,
+              next_review: .reviewNextReview
+            },
+            expiry_date: (.expiryDate // null)
+          }' | yq -P > "SIEM/Rules/${RULE_NAME}.yml"
           
           echo "Created rule file: SIEM/Rules/${RULE_NAME}.yml"
+          echo ""
+          echo "Generated YAML content:"
+          cat "SIEM/Rules/${RULE_NAME}.yml"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
