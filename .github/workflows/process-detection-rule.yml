@@ -40,7 +40,9 @@ jobs:
             function extractArrayField(body, fieldLabel) {
               const value = extractField(body, fieldLabel);
               if (!value) return [];
-              return value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+              // Remove code block markers (```text, ```, etc.) and split by newlines
+              const cleanValue = value.replace(/```\w*\n?/g, '').replace(/```/g, '');
+              return cleanValue.split('\n').map(line => line.trim()).filter(line => line.length > 0);
             }
             
             // Extract all fields
