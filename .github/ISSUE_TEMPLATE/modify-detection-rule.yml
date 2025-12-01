@@ -1,0 +1,241 @@
+name: Modify Detection Rule
+description: Modify an existing detection rule
+title: "[MODIFY] "
+labels: ["detection-rule-modify"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Modify Existing Detection Rule
+        
+        Use this form to modify an existing detection rule.
+        
+        **What happens next:**
+        1. Fill out this form with the updated rule details
+        2. Submit the issue
+        3. Our workflow will automatically extract the information
+        4. A pull request will be created updating the existing rule file
+        5. The team will review and approve the PR
+        
+        **Note:** Only fill in the fields you want to change. Leave other fields empty to keep existing values.
+  
+  - type: input
+    id: existing-rule-file
+    attributes:
+      label: Existing Rule Filename
+      description: Enter the filename of the rule to modify (e.g., detection-rule-5.yml)
+      placeholder: detection-rule-5.yml
+    validations:
+      required: true
+
+  - type: input
+    id: rule-name
+    attributes:
+      label: Rule Name
+      description: The name of the existing rule (must match exactly)
+      placeholder: e.g., Detection Rule 5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rule-status
+    attributes:
+      label: Rule Status (Optional)
+      description: Update the rule status (leave blank to keep existing)
+      options:
+        - ""
+        - Disabled-PreProd
+        - Enabled-PreProd
+        - Disabled-Prod
+        - Enabled-Prod
+    validations:
+      required: false
+
+  - type: textarea
+    id: rule-description
+    attributes:
+      label: Rule Description (Optional)
+      description: Update the rule description (leave empty to keep existing)
+      placeholder: Leave empty to keep existing description
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References (Optional)
+      description: Update references, one per line (leave empty to keep existing)
+      placeholder: |
+        https://example.com/new-reference
+      render: text
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Modification Information
+
+  - type: input
+    id: modified-by
+    attributes:
+      label: Modified By
+      description: Enter your name or GitHub username
+      placeholder: Your name
+    validations:
+      required: true
+
+  - type: input
+    id: modified-date
+    attributes:
+      label: Modified Date
+      description: Enter today's date (YYYY-MM-DD)
+      placeholder: YYYY-MM-DD (e.g., 2025-12-01)
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## MITRE ATT&CK & Data Sources (Optional)
+
+  - type: textarea
+    id: tags
+    attributes:
+      label: MITRE ATT&CK Mapping (Optional)
+      description: Update MITRE ATT&CK tags, one per line (leave empty to keep existing)
+      placeholder: |
+        attack.T1059
+        attack.T1071
+      render: text
+    validations:
+      required: false
+  
+  - type: textarea
+    id: log-source-vendor
+    attributes:
+      label: Vendor Data Sources (Optional)
+      description: Update vendor data sources (leave empty to keep existing)
+      placeholder: e.g., O365, AWS
+    validations:
+      required: false
+  
+  - type: textarea
+    id: log-source-service
+    attributes:
+      label: Service Data Sources (Optional)
+      description: Update service data sources (leave empty to keep existing)
+      placeholder: e.g., Audit Logs, VPC Flow Logs, DNS Logs
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Detection Query Updates
+
+  - type: textarea
+    id: detection-query-before
+    attributes:
+      label: Detection Query Before
+      description: Enter the current/existing query (what it is now)
+      placeholder: Current query before modification
+    validations:
+      required: false
+
+  - type: textarea
+    id: detection-query-after
+    attributes:
+      label: Detection Query After
+      description: Enter the new/updated query (leave empty to keep existing)
+      placeholder: New query after modification
+    validations:
+      required: false
+
+  - type: textarea
+    id: detection-query-condition
+    attributes:
+      label: Detection Query Condition (Optional)
+      description: Update the detection condition (leave empty to keep existing)
+      placeholder: Trigger on the first event which matches the specified query
+    validations:
+      required: false
+
+  - type: textarea
+    id: detection-query-suppress
+    attributes:
+      label: Detection Query Suppress (Optional)
+      description: Update suppress criteria (leave empty to keep existing)
+      placeholder: Suppress for 15 minutes
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Severity & Response (Optional)
+  
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity (Optional)
+      description: Update severity level (leave blank to keep existing)
+      options:
+        - ""
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: false
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome (Optional)
+      description: Update the expected outcome (leave empty to keep existing)
+      placeholder: Alert - No investigation required
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Review Schedule
+
+  - type: input
+    id: review-last-reviewed
+    attributes:
+      label: Review Last Reviewed
+      description: Enter today's date (YYYY-MM-DD). This is the date of this modification.
+      placeholder: YYYY-MM-DD (e.g., 2025-12-01)
+    validations:
+      required: true
+
+  - type: input
+    id: review-next-review
+    attributes:
+      label: Review Next Review
+      description: Enter the next review date (YYYY-MM-DD). Typically one year from today.
+      placeholder: YYYY-MM-DD (e.g., 2026-12-01)
+    validations:
+      required: true
+
+  - type: input
+    id: expiry-date
+    attributes:
+      label: Expiry Date (Optional)
+      description: Update expiry date (leave empty to keep existing)
+      placeholder: YYYY-MM-DD or leave empty
+    validations:
+      required: false
+
+  - type: textarea
+    id: change-summary
+    attributes:
+      label: Summary of Changes
+      description: Briefly describe what changes you're making and why
+      placeholder: e.g., Updated query to reduce false positives, changed severity from Medium to High
+    validations:
+      required: true

@@ -1,0 +1,231 @@
+name: Modify Detection Rule
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  modify-rule:
+    if: contains(github.event.issue.labels.*.name, 'detection-rule-modify')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract issue form data
+        id: extract
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body;
+            
+            // Function to extract form field value
+            function extractField(body, fieldLabel) {
+              const regex = new RegExp(`### ${fieldLabel}\\s*\\n+([\\s\\S]*?)(?=\\n###|$)`, 'i');
+              const match = body.match(regex);
+              if (match && match[1]) {
+                const value = match[1].trim();
+                return value === '_No response_' || value === '' ? null : value;
+              }
+              return null;
+            }
+            
+            // Function to extract array fields (split by newlines)
+            function extractArrayField(body, fieldLabel) {
+              const value = extractField(body, fieldLabel);
+              if (!value) return null;
+              // Remove code block markers (```text, ```, etc.) and split by newlines
+              const cleanValue = value.replace(/```\w*\n?/g, '').replace(/```/g, '');
+              const array = cleanValue.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+              return array.length > 0 ? array : null;
+            }
+            
+            // Extract all fields (null means no change)
+            const data = {
+              existingRuleFile: extractField(issueBody, 'Existing Rule Filename'),
+              ruleName: extractField(issueBody, 'Rule Name'),
+              ruleStatus: extractField(issueBody, 'Rule Status (Optional)'),
+              ruleDescription: extractField(issueBody, 'Rule Description (Optional)'),
+              references: extractArrayField(issueBody, 'References (Optional)'),
+              modifiedBy: extractField(issueBody, 'Modified By'),
+              modifiedDate: extractField(issueBody, 'Modified Date'),
+              tags: extractArrayField(issueBody, 'MITRE ATT&CK Mapping (Optional)'),
+              logSourceVendor: extractField(issueBody, 'Vendor Data Sources (Optional)'),
+              logSourceService: extractField(issueBody, 'Service Data Sources (Optional)'),
+              detectionQueryBefore: extractField(issueBody, 'Detection Query Before'),
+              detectionQueryAfter: extractField(issueBody, 'Detection Query After'),
+              detectionQueryCondition: extractField(issueBody, 'Detection Query Condition (Optional)'),
+              detectionQuerySuppress: extractField(issueBody, 'Detection Query Suppress (Optional)'),
+              severity: extractField(issueBody, 'Severity (Optional)'),
+              outcome: extractField(issueBody, 'Outcome (Optional)'),
+              reviewLastReviewed: extractField(issueBody, 'Review Last Reviewed'),
+              reviewNextReview: extractField(issueBody, 'Review Next Review'),
+              expiryDate: extractField(issueBody, 'Expiry Date (Optional)'),
+              changeSummary: extractField(issueBody, 'Summary of Changes')
+            };
+            
+            // Log extracted data
+            console.log('Extracted Modification Data:');
+            console.log(JSON.stringify(data, null, 2));
+            
+            // Set output for use in next steps
+            core.setOutput('modification-data', JSON.stringify(data));
+            core.setOutput('rule-file', data.existingRuleFile || 'unknown');
+            core.setOutput('rule-name', data.ruleName || 'unknown');
+            
+            return data;
+
+      - name: Update detection rule file
+        env:
+          MOD_DATA: ${{ steps.extract.outputs.modification-data }}
+          RULE_FILE: ${{ steps.extract.outputs.rule-file }}
+        run: |
+          # Install yq for YAML processing
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          
+          # Parse the JSON data
+          echo "$MOD_DATA" | jq .
+          
+          RULE_PATH="SIEM/Correlation Rules/${RULE_FILE}"
+          
+          # Check if file exists
+          if [ ! -f "$RULE_PATH" ]; then
+            echo "Error: Rule file $RULE_PATH does not exist!"
+            exit 1
+          fi
+          
+          echo "Updating existing rule: $RULE_PATH"
+          
+          # Read existing rule
+          EXISTING_RULE=$(cat "$RULE_PATH")
+          
+          # Update fields conditionally using yq
+          # Only update if new value is provided (not null)
+          
+          # Update status if provided
+          STATUS=$(echo "$MOD_DATA" | jq -r '.ruleStatus // empty')
+          if [ -n "$STATUS" ]; then
+            yq eval ".status = \"$STATUS\"" -i "$RULE_PATH"
+          fi
+          
+          # Update description if provided
+          DESC=$(echo "$MOD_DATA" | jq -r '.ruleDescription // empty')
+          if [ -n "$DESC" ]; then
+            echo "$DESC" | yq eval ".description = \"$(cat -)\"" -i "$RULE_PATH"
+          fi
+          
+          # Update references if provided
+          REFS=$(echo "$MOD_DATA" | jq -r '.references // empty | if . then . else empty end | @json')
+          if [ -n "$REFS" ]; then
+            echo "$REFS" | yq eval ".references = (env(REFS) | fromjson)" -i "$RULE_PATH"
+          fi
+          
+          # Update modified information
+          MOD_BY=$(echo "$MOD_DATA" | jq -r '.modifiedBy')
+          MOD_DATE=$(echo "$MOD_DATA" | jq -r '.modifiedDate')
+          yq eval ".modified.by = \"$MOD_BY\"" -i "$RULE_PATH"
+          yq eval ".modified.date = \"$MOD_DATE\"" -i "$RULE_PATH"
+          
+          # Update tags if provided
+          TAGS=$(echo "$MOD_DATA" | jq -r '.tags // empty | if . then . else empty end | @json')
+          if [ -n "$TAGS" ]; then
+            echo "$TAGS" | yq eval ".tags = (env(TAGS) | fromjson)" -i "$RULE_PATH"
+          fi
+          
+          # Update log sources if provided
+          VENDOR=$(echo "$MOD_DATA" | jq -r '.logSourceVendor // empty')
+          if [ -n "$VENDOR" ]; then
+            yq eval ".log_source.vendor = \"$VENDOR\"" -i "$RULE_PATH"
+          fi
+          
+          SERVICE=$(echo "$MOD_DATA" | jq -r '.logSourceService // empty')
+          if [ -n "$SERVICE" ]; then
+            yq eval ".log_source.service = \"$SERVICE\"" -i "$RULE_PATH"
+          fi
+          
+          # Update detection queries if provided
+          QUERY_BEFORE=$(echo "$MOD_DATA" | jq -r '.detectionQueryBefore // empty')
+          if [ -n "$QUERY_BEFORE" ]; then
+            echo "$QUERY_BEFORE" | yq eval ".detection.query.before = \"$(cat -)\"" -i "$RULE_PATH"
+          fi
+          
+          QUERY_AFTER=$(echo "$MOD_DATA" | jq -r '.detectionQueryAfter // empty')
+          if [ -n "$QUERY_AFTER" ]; then
+            echo "$QUERY_AFTER" | yq eval ".detection.query.after = \"$(cat -)\"" -i "$RULE_PATH"
+          fi
+          
+          CONDITION=$(echo "$MOD_DATA" | jq -r '.detectionQueryCondition // empty')
+          if [ -n "$CONDITION" ]; then
+            yq eval ".detection.condition = \"$CONDITION\"" -i "$RULE_PATH"
+          fi
+          
+          SUPPRESS=$(echo "$MOD_DATA" | jq -r '.detectionQuerySuppress // empty')
+          if [ -n "$SUPPRESS" ]; then
+            yq eval ".detection.suppress = \"$SUPPRESS\"" -i "$RULE_PATH"
+          fi
+          
+          # Update severity if provided
+          SEVERITY=$(echo "$MOD_DATA" | jq -r '.severity // empty')
+          if [ -n "$SEVERITY" ]; then
+            yq eval ".severity = \"$SEVERITY\"" -i "$RULE_PATH"
+          fi
+          
+          # Update outcome if provided
+          OUTCOME=$(echo "$MOD_DATA" | jq -r '.outcome // empty')
+          if [ -n "$OUTCOME" ]; then
+            yq eval ".outcome = \"$OUTCOME\"" -i "$RULE_PATH"
+          fi
+          
+          # Update review dates
+          LAST_REVIEWED=$(echo "$MOD_DATA" | jq -r '.reviewLastReviewed')
+          NEXT_REVIEW=$(echo "$MOD_DATA" | jq -r '.reviewNextReview')
+          yq eval ".review.last_reviewed = \"$LAST_REVIEWED\"" -i "$RULE_PATH"
+          yq eval ".review.next_review = \"$NEXT_REVIEW\"" -i "$RULE_PATH"
+          
+          # Update expiry date if provided
+          EXPIRY=$(echo "$MOD_DATA" | jq -r '.expiryDate // empty')
+          if [ -n "$EXPIRY" ]; then
+            yq eval ".expiry_date = \"$EXPIRY\"" -i "$RULE_PATH"
+          fi
+          
+          echo ""
+          echo "Updated YAML content:"
+          cat "$RULE_PATH"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "Modify detection rule: ${{ steps.extract.outputs.rule-name }}"
+          title: "Modify Detection Rule: ${{ steps.extract.outputs.rule-name }}"
+          body: |
+            This PR modifies an existing detection rule based on issue #${{ github.event.issue.number }}
+            
+            **Rule File:** `${{ steps.extract.outputs.rule-file }}`
+            **Rule Name:** ${{ steps.extract.outputs.rule-name }}
+            
+            **Summary of Changes:**
+            ${{ fromJSON(steps.extract.outputs.modification-data).changeSummary }}
+            
+            Closes #${{ github.event.issue.number }}
+          branch: modify-rule-${{ github.event.issue.number }}
+          delete-branch: true
+          labels: detection-rule-modify
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Detection rule has been updated and a pull request has been created. Please review the PR to approve the modifications.'
+            })
