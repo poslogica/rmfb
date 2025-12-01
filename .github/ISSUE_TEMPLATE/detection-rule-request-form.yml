@@ -1,6 +1,6 @@
-name: Detection Rule Request Form
-description: Request a new detection rule or modification to an existing rule
-title: "[DETECTION] "
+name: Create Detection Rule
+description: Create a new detection rule
+title: "[CREATE] "
 labels: ["detection-rule"]
 assignees: []
 body:
