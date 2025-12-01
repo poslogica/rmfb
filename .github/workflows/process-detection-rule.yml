@@ -91,7 +91,7 @@ jobs:
           echo "$RULE_DATA" | jq .
           
           # Create SIEM directory if it doesn't exist
-          mkdir -p SIEM/Rules
+          mkdir -p "SIEM/Correlation Rules"
           
           # Extract rule name and sanitize for filename
           RULE_NAME=$(echo "$RULE_DATA" | jq -r '.ruleName // "unknown-rule"' | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]//g')
@@ -130,12 +130,12 @@ jobs:
               next_review: .reviewNextReview
             },
             expiry_date: (.expiryDate // null)
-          }' | yq -P > "SIEM/Rules/${RULE_NAME}.yml"
+          }' | yq -P > "SIEM/Correlation Rules/${RULE_NAME}.yml"
           
-          echo "Created rule file: SIEM/Rules/${RULE_NAME}.yml"
+          echo "Created rule file: SIEM/Correlation Rules/${RULE_NAME}.yml"
           echo ""
           echo "Generated YAML content:"
-          cat "SIEM/Rules/${RULE_NAME}.yml"
+          cat "SIEM/Correlation Rules/${RULE_NAME}.yml"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
