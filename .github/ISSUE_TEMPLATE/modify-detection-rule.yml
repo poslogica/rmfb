@@ -1,7 +1,7 @@
 name: Modify Detection Rule
 description: Modify an existing detection rule
 title: "[MODIFY] "
-labels: ["detection-rule-modify"]
+labels: ["detection-rule", "modify"]
 assignees: []
 body:
   - type: markdown

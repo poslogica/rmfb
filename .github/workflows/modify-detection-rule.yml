@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   modify-rule:
-    if: contains(github.event.issue.labels.*.name, 'detection-rule-modify')
+    if: contains(github.event.issue.labels.*.name, 'modify')
     runs-on: ubuntu-latest
     
     steps:
@@ -169,7 +169,7 @@ jobs:
             Closes #${{ github.event.issue.number }}
           branch: modify-rule-${{ github.event.issue.number }}
           delete-branch: true
-          labels: detection-rule-modify
+          labels: modify
 
       - name: Show current values and confirm update
         uses: actions/github-script@v7
