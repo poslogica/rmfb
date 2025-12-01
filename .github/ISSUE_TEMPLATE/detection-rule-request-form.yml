@@ -74,8 +74,8 @@ body:
     id: modified-by
     attributes:
       label: Modified By
-      description: Enter the name of the user modifying an existing rule (leave empty if not applicable)
-      placeholder: Leave empty for NULL
+      description: Enter the name of the user modifying an existing rule (leave empty for NULL)
+      placeholder: Your name, the one modifying the rule
     validations:
       required: false
 
@@ -122,8 +122,8 @@ body:
     id: detection-query-before
     attributes:
       label: Detection Query Before
-      description: Describe the conditions or indicators that should trigger this detection
-      placeholder: Provide specific criteria, patterns, or indicators
+      description: Describe the conditions or indicators that should trigger this detection (leave empty for NULL)
+      placeholder: Provide specific query
     validations:
       required: true
 
@@ -131,8 +131,8 @@ body:
     id: detection-query-after
     attributes:
       label: Detection Query After
-      description: Describe the conditions or indicators that should trigger this detection
-      placeholder: Provide specific criteria, patterns, or indicators
+      description: Enter the query that should trigger this detection (leave empty for NULL)
+      placeholder: Provide specific query
     validations:
       required: true
 
@@ -140,8 +140,8 @@ body:
     id: detection-query-condition
     attributes:
       label: Detection Query Condition
-      description: Describe the conditions or indicators that should trigger this detection
-      placeholder: Provide specific criteria, patterns, or indicators
+      description: Describe the conditions that should trigger this detection
+      placeholder: Trigger on the first event which matches the specified query
     validations:
       required: true
 
@@ -149,10 +149,10 @@ body:
     id: detection-query-suppress
     attributes:
       label: Detection Query Suppress
-      description: Describe the conditions or indicators that should trigger this detection
-      placeholder: Provide specific criteria, patterns, or indicators
+      description: Enter the suppress criteria for this detection (leave empty for NULL)
+      placeholder: Supress for 15 minutes
     validations:
-      required: true
+      required: false
   
   - type: dropdown
     id: severity
@@ -160,10 +160,10 @@ body:
       label: Severity
       description: Select the severity level for this detection rule
       options:
-        - Critical
         - High
         - Medium
         - Low
+        - None
     validations:
       required: true
 
