@@ -17,82 +17,7 @@ body:
       placeholder: e.g., Suspicious PowerShell Execution
     validations:
       required: true
-  
-  - type: textarea
-    id: rule-description
-    attributes:
-      label: Rule Description
-      description: Describe what this detection rule should detect
-      placeholder: Provide a detailed description of the detection rule
-    validations:
-      required: true
-  
-  - type: checkboxes
-    id: threat-type
-    attributes:
-      label: Threat Type
-      description: Select the type(s) of threat this rule addresses
-      options:
-        - label: Malware
-        - label: Phishing
-        - label: Data Exfiltration
-        - label: Unauthorized Access
-        - label: Privilege Escalation
-        - label: Lateral Movement
-        - label: Command & Control
-        - label: Other
-    validations:
-      required: true
-  
-  - type: input
-    id: mitre-attack
-    attributes:
-      label: MITRE ATT&CK Mapping
-      description: Provide the MITRE ATT&CK technique ID(s) and tactic(s)
-      placeholder: e.g., T1059.001 - PowerShell, Execution
-    validations:
-      required: false
-  
-  - type: textarea
-    id: data-sources
-    attributes:
-      label: Data Sources
-      description: What data sources should be used?
-      placeholder: e.g., Windows Event Logs, Sysmon, Network Traffic
-    validations:
-      required: true
-  
-  - type: textarea
-    id: detection-criteria
-    attributes:
-      label: Detection Criteria
-      description: Describe the conditions or indicators that should trigger this detection
-      placeholder: Provide specific criteria, patterns, or indicators
-    validations:
-      required: true
-  
-  - type: textarea
-    id: expected-findings
-    attributes:
-      label: Expected Findings
-      description: What should be flagged or alerted on?
-      placeholder: Describe what you expect the rule to detect
-    validations:
-      required: true
-  
-  - type: dropdown
-    id: priority
-    attributes:
-      label: Priority
-      description: Select the priority level for this detection rule
-      options:
-        - Critical
-        - High
-        - Medium
-        - Low
-    validations:
-      required: true
-  
+
   - type: dropdown
     id: rule-status
     attributes:
@@ -105,21 +30,166 @@ body:
         - Disabled-Prod
     validations:
       required: true
-  
+
   - type: textarea
-    id: additional-context
+    id: rule-description
     attributes:
-      label: Additional Context
-      description: Any additional information, references, or context about this detection rule request
-      placeholder: Provide any additional details, links to resources, etc.
+      label: Rule Description
+      description: Describe what this detection rule should detect
+      placeholder: Provide a detailed description of the detection rule
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Provide URL links to additional information, one per line (leave empty for NULL)
+      placeholder: |
+        https://example.com/threat-intel
+        https://example.com/documentation
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      description: Enter your name or GitHub username
+      placeholder: Your name
+    validations:
+      required: true
+
+  - type: input
+    id: modified
+    attributes:
+      label: Modified By
+      description: Enter the name of the user modifying an existing rule (leave empty if not applicable)
+      placeholder: Leave empty for NULL
+    validations:
+      required: false
+
+  - type: input
+    id: date-created
+    attributes:
+      label: Date Created
+      description: Enter the date the rule was created (this should only be set once and never modified)
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+
+  - type: textarea
+    id: tags
+    attributes:
+      label: MITRE ATT&CK Mapping
+      description: Provide the MITRE ATT&CK technique ID(s) and tactic(s), one per line
+      placeholder: |
+        attack.T1059
+        attack.T1071
+      render: text
     validations:
       required: false
   
   - type: textarea
-    id: testing-requirements
+    id: log-source-vendor
     attributes:
-      label: Testing Requirements
-      description: How should this detection rule be tested or validated?
-      placeholder: Describe testing scenarios or validation criteria
+      label: Vendor Data Sources
+      description: What vendor data sources should be used?
+      placeholder: e.g., O365, AWS
+    validations:
+      required: true
+  
+  - type: textarea
+    id: log-source-service
+    attributes:
+      label: Service Data Sources
+      description: What service data sources should be used?
+      placeholder: e.g., Audit Logs, VPC Flow Logs, DNS Logs
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection-query-before
+    attributes:
+      label: Detection Query Before
+      description: Describe the conditions or indicators that should trigger this detection
+      placeholder: Provide specific criteria, patterns, or indicators
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection-query-after
+    attributes:
+      label: Detection Query After
+      description: Describe the conditions or indicators that should trigger this detection
+      placeholder: Provide specific criteria, patterns, or indicators
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection-query-condition
+    attributes:
+      label: Detection Query Condition
+      description: Describe the conditions or indicators that should trigger this detection
+      placeholder: Provide specific criteria, patterns, or indicators
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection-query-suppress
+    attributes:
+      label: Detection Query Suppress
+      description: Describe the conditions or indicators that should trigger this detection
+      placeholder: Provide specific criteria, patterns, or indicators
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Select the severity level for this detection rule
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: Describe the expected outcome of this detection rule
+      placeholder: Alert - No investigation required
+    validations:
+      required: true
+
+  - type: input
+    id: review-last-reviewed
+    attributes:
+      label: Review Last Reviewed
+      description: Enter the last reviewed date
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: review-next-review
+    attributes:
+      label: Review Next Review
+      description: Enter the next review date
+      placeholder: YYYY-MM-DD
+    validations:
+      required: false
+
+  - type: input
+    id: expiry-date
+    attributes:
+      label: Expiry Date
+      description: Enter the expiry date or leave empty for NULL
+      placeholder: YYYY-MM-DD or NULL
     validations:
       required: false
