@@ -24,7 +24,9 @@ body:
     id: existing-rule-file
     attributes:
       label: Existing Rule Filename
-      description: Enter the filename of the rule to modify (e.g., detection-rule-5.yml)
+      description: |
+        Enter the filename of the rule to modify (e.g., detection-rule-5.yml)
+        Browse existing rules: https://github.com/poslogica/rmfb/tree/main/SIEM/Correlation%20Rules
       placeholder: detection-rule-5.yml
     validations:
       required: true
