@@ -83,8 +83,8 @@ body:
     id: modified-date
     attributes:
       label: Modified Date
-      description: Enter the date the rule was modified (leave empty if not applicable)
-      placeholder: Leave empty for NULL
+      description: Enter the date the rule was modified (leave empty for NULL)
+      placeholder: YYYY-MM-DD or NULL
     validations:
       required: false      
 
@@ -122,7 +122,7 @@ body:
     id: detection-query-before
     attributes:
       label: Detection Query Before
-      description: Describe the conditions or indicators that should trigger this detection (leave empty for NULL)
+      description: Enter the query that should trigger this detection (leave empty for NULL)
       placeholder: Provide specific query
     validations:
       required: true
@@ -183,7 +183,7 @@ body:
       description: Enter the last reviewed date
       placeholder: YYYY-MM-DD
     validations:
-      required: false
+      required: true
 
   - type: input
     id: review-next-review
@@ -192,13 +192,13 @@ body:
       description: Enter the next review date
       placeholder: YYYY-MM-DD
     validations:
-      required: false
+      required: true
 
   - type: input
     id: expiry-date
     attributes:
       label: Expiry Date
-      description: Enter the expiry date or leave empty for NULL
+      description: Enter the expiry date (leave empty for NULL)
       placeholder: YYYY-MM-DD or NULL
     validations:
       required: false
