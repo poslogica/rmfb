@@ -10,7 +10,7 @@ permissions:
   issues: write
 
 jobs:
-  extract-and-process:
+  create-rule:
     if: contains(github.event.issue.labels.*.name, 'create')
     runs-on: ubuntu-latest
     
