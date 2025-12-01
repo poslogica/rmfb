@@ -122,17 +122,17 @@ body:
     id: detection-query-before
     attributes:
       label: Detection Query Before
-      description: Enter the query that should trigger this detection (leave empty for NULL)
-      placeholder: Provide specific query
+      description: For modifications only - Enter the previous/existing query. Leave empty for new rules.
+      placeholder: Previous query (leave empty if this is a new rule)
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: detection-query-after
     attributes:
       label: Detection Query After
-      description: Enter the query that should trigger this detection (leave empty for NULL)
-      placeholder: Provide specific query
+      description: Enter the new/updated query that should trigger this detection
+      placeholder: Enter the detection query
     validations:
       required: true
 
