@@ -93,6 +93,19 @@ body:
     validations:
       required: true
   
+  - type: dropdown
+    id: rule-status
+    attributes:
+      label: Rule Status
+      description: Select the desired status for this detection rule
+      options:
+        - Enabled-PreProd
+        - Disabled-PreProd
+        - Enabled-Prod
+        - Disabled-Prod
+    validations:
+      required: true
+  
   - type: textarea
     id: additional-context
     attributes:
