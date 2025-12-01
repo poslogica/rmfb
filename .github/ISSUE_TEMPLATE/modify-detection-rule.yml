@@ -114,12 +114,32 @@ body:
     validations:
       required: false
   
-  - type: textarea
+  - type: checkboxes
     id: log-source-vendor
     attributes:
       label: Vendor Data Sources (Optional)
-      description: Update vendor data sources (leave empty to keep existing)
-      placeholder: e.g., O365, AWS
+      description: Select vendor data source(s) to update, or leave unchecked to keep existing (specify custom vendor below if needed)
+      options:
+        - label: Microsoft 365 (O365)
+        - label: AWS
+        - label: Azure
+        - label: Google Cloud Platform (GCP)
+        - label: Palo Alto Networks
+        - label: Cisco
+        - label: Fortinet
+        - label: CrowdStrike
+        - label: SentinelOne
+        - label: Okta
+        - label: Other (specify below)
+    validations:
+      required: false
+
+  - type: input
+    id: log-source-vendor-custom
+    attributes:
+      label: Custom Vendor (if Other selected)
+      description: If you selected "Other" above, specify the vendor name here
+      placeholder: e.g., Custom Vendor Name
     validations:
       required: false
   

@@ -123,14 +123,34 @@ body:
       value: |
         ## Data Sources & Detection Logic
   
-  - type: textarea
+  - type: checkboxes
     id: log-source-vendor
     attributes:
       label: Vendor Data Sources
-      description: What vendor data sources should be used?
-      placeholder: e.g., O365, AWS
+      description: Select vendor data source(s) or specify custom vendor below
+      options:
+        - label: Microsoft 365 (O365)
+        - label: AWS
+        - label: Azure
+        - label: Google Cloud Platform (GCP)
+        - label: Palo Alto Networks
+        - label: Cisco
+        - label: Fortinet
+        - label: CrowdStrike
+        - label: SentinelOne
+        - label: Okta
+        - label: Other (specify below)
     validations:
-      required: true
+      required: false
+
+  - type: input
+    id: log-source-vendor-custom
+    attributes:
+      label: Custom Vendor (if Other selected)
+      description: If you selected "Other" above, specify the vendor name here
+      placeholder: e.g., Custom Vendor Name
+    validations:
+      required: false
   
   - type: textarea
     id: log-source-service

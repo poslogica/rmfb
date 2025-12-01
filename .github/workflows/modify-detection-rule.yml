@@ -46,6 +46,27 @@ jobs:
               return array.length > 0 ? array : null;
             }
             
+            // Function to extract checkbox selections
+            function extractCheckboxes(body, fieldLabel) {
+              const regex = new RegExp(`### ${fieldLabel}\\s*\\n+([\\s\\S]*?)(?=\\n###|$)`, 'i');
+              const match = body.match(regex);
+              if (!match || !match[1]) return null;
+              
+              const checkboxSection = match[1];
+              const checked = [];
+              const lines = checkboxSection.split('\n');
+              
+              for (const line of lines) {
+                if (line.includes('- [X]') || line.includes('- [x]')) {
+                  const labelMatch = line.match(/- \[[xX]\] (.+)/);
+                  if (labelMatch) {
+                    checked.push(labelMatch[1].trim());
+                  }
+                }
+              }
+              return checked.length > 0 ? checked : null;
+            }
+            
             // Extract all fields (null means no change)
             const data = {
               existingRuleFile: extractField(issueBody, 'Existing Rule Filename'),
@@ -56,7 +77,8 @@ jobs:
               modifiedBy: extractField(issueBody, 'Modified By'),
               modifiedDate: extractField(issueBody, 'Modified Date'),
               tags: extractArrayField(issueBody, 'MITRE ATT&CK Mapping (Optional)'),
-              logSourceVendor: extractField(issueBody, 'Vendor Data Sources (Optional)'),
+              logSourceVendorCheckboxes: extractCheckboxes(issueBody, 'Vendor Data Sources \\(Optional\\)'),
+              logSourceVendorCustom: extractField(issueBody, 'Custom Vendor \\(if Other selected\\)'),
               logSourceService: extractField(issueBody, 'Service Data Sources (Optional)'),
               detectionQueryBefore: extractField(issueBody, 'Detection Query Before'),
               detectionQueryAfter: extractField(issueBody, 'Detection Query After'),
@@ -117,7 +139,19 @@ jobs:
             },
             tags: (.tags // empty | if . == [] or . == null then null else . end),
             log_source: {
-              vendor: (.logSourceVendor // empty | if . == "" then null else . end),
+              vendor: (
+                if (.logSourceVendorCheckboxes // null) != null then
+                  (.logSourceVendorCheckboxes | 
+                    map(if . == "Other (specify below)" then null else . end) | 
+                    map(select(. != null))) +
+                  (if .logSourceVendorCustom then [.logSourceVendorCustom] else [] end) |
+                  if length > 0 then . else null end
+                elif (.logSourceVendorCustom // null) != null then
+                  [.logSourceVendorCustom]
+                else
+                  null
+                end
+              ),
               service: (.logSourceService // empty | if . == "" then null else . end)
             },
             detection: {
