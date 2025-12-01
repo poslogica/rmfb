@@ -163,7 +163,6 @@ body:
         - High
         - Medium
         - Low
-        - None
     validations:
       required: true
 
