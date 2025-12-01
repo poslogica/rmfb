@@ -1,7 +1,7 @@
 name: Create Detection Rule
 description: Create a new detection rule
 title: "[CREATE] "
-labels: ["detection-rule"]
+labels: ["detection-rule", "create"]
 assignees: []
 body:
   - type: markdown
