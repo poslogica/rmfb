@@ -212,19 +212,19 @@ body:
     id: review-last-reviewed
     attributes:
       label: Review Last Reviewed
-      description: Enter the last reviewed date (leave empty for new rules, use today's date)
-      placeholder: YYYY-MM-DD
+      description: Enter today's date (YYYY-MM-DD). This is the date the rule was created or last modified.
+      placeholder: YYYY-MM-DD (e.g., 2025-12-01)
     validations:
-      required: false
+      required: true
 
   - type: input
     id: review-next-review
     attributes:
       label: Review Next Review
-      description: Enter the next review date (typically 6-12 months from today)
-      placeholder: YYYY-MM-DD
+      description: Enter the next review date (YYYY-MM-DD). This should be one year after the Review Last Reviewed date.
+      placeholder: YYYY-MM-DD (e.g., 2026-12-01)
     validations:
-      required: false
+      required: true
 
   - type: input
     id: expiry-date
