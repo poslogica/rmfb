@@ -1,0 +1,27 @@
+name: detection rule 3
+status: Enabled-PreProd
+description: detection rule 3
+references: null
+author:
+  by: null
+  date: "2025-12-02"
+modified:
+  by: null
+  date: null
+tags: null
+log_source:
+  vendor:
+    - Microsoft 365 (O365)
+  service: Test
+detection:
+  query:
+    before: before
+    after: after
+  condition: aaaa
+  suppress: aaaaaa
+severity: Medium
+outcome: aaaaaa
+review:
+  last_reviewed: "2025-12-02"
+  next_review: "2026-12-02"
+expiry_date: null
