@@ -1,0 +1,158 @@
+name: Process Detection Rule Request
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  extract-and-process:
+    if: contains(github.event.issue.labels.*.name, 'detection-rule')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract issue form data
+        id: extract
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body;
+            
+            // Function to extract form field value
+            function extractField(body, fieldLabel) {
+              const regex = new RegExp(`### ${fieldLabel}\\s*\\n+([\\s\\S]*?)(?=\\n###|$)`, 'i');
+              const match = body.match(regex);
+              if (match && match[1]) {
+                const value = match[1].trim();
+                return value === '_No response_' || value === '' ? null : value;
+              }
+              return null;
+            }
+            
+            // Function to extract array fields (split by newlines)
+            function extractArrayField(body, fieldLabel) {
+              const value = extractField(body, fieldLabel);
+              if (!value) return [];
+              return value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            }
+            
+            // Extract all fields
+            const data = {
+              ruleName: extractField(issueBody, 'Rule Name'),
+              ruleStatus: extractField(issueBody, 'Rule Status'),
+              ruleDescription: extractField(issueBody, 'Rule Description'),
+              references: extractArrayField(issueBody, 'References'),
+              authorBy: extractField(issueBody, 'Author By'),
+              authorDate: extractField(issueBody, 'Author Date'),
+              modifiedBy: extractField(issueBody, 'Modified By'),
+              modifiedDate: extractField(issueBody, 'Modified Date'),
+              tags: extractArrayField(issueBody, 'MITRE ATT&CK Mapping'),
+              logSourceVendor: extractField(issueBody, 'Vendor Data Sources'),
+              logSourceService: extractField(issueBody, 'Service Data Sources'),
+              detectionQueryBefore: extractField(issueBody, 'Detection Query Before'),
+              detectionQueryAfter: extractField(issueBody, 'Detection Query After'),
+              detectionQueryCondition: extractField(issueBody, 'Detection Query Condition'),
+              detectionQuerySuppress: extractField(issueBody, 'Detection Query Suppress'),
+              severity: extractField(issueBody, 'Severity'),
+              outcome: extractField(issueBody, 'Outcome'),
+              reviewLastReviewed: extractField(issueBody, 'Review Last Reviewed'),
+              reviewNextReview: extractField(issueBody, 'Review Next Review'),
+              expiryDate: extractField(issueBody, 'Expiry Date')
+            };
+            
+            // Log extracted data
+            console.log('Extracted Detection Rule Data:');
+            console.log(JSON.stringify(data, null, 2));
+            
+            // Set output for use in next steps
+            core.setOutput('rule-data', JSON.stringify(data));
+            core.setOutput('rule-name', data.ruleName || 'unknown');
+            
+            return data;
+
+      - name: Create detection rule file
+        env:
+          RULE_DATA: ${{ steps.extract.outputs.rule-data }}
+        run: |
+          # Parse the JSON data
+          echo "$RULE_DATA" | jq .
+          
+          # Create SIEM directory if it doesn't exist
+          mkdir -p SIEM/Rules
+          
+          # Extract rule name and sanitize for filename
+          RULE_NAME=$(echo "$RULE_DATA" | jq -r '.ruleName // "unknown-rule"' | tr ' ' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]//g')
+          
+          # Create YAML file with the rule data
+          cat > "SIEM/Rules/${RULE_NAME}.yml" << 'EOF'
+          name: $(echo "$RULE_DATA" | jq -r '.ruleName')
+          status: $(echo "$RULE_DATA" | jq -r '.ruleStatus')
+          description: |
+            $(echo "$RULE_DATA" | jq -r '.ruleDescription')
+          
+          references:
+          $(echo "$RULE_DATA" | jq -r '.references[] | "  - " + .')
+          
+          author:
+            by: $(echo "$RULE_DATA" | jq -r '.authorBy')
+            date: $(echo "$RULE_DATA" | jq -r '.authorDate')
+          
+          modified:
+            by: $(echo "$RULE_DATA" | jq -r '.modifiedBy // "null"')
+            date: $(echo "$RULE_DATA" | jq -r '.modifiedDate // "null"')
+          
+          tags:
+          $(echo "$RULE_DATA" | jq -r '.tags[] | "  - " + .')
+          
+          log_source:
+            vendor: $(echo "$RULE_DATA" | jq -r '.logSourceVendor')
+            service: $(echo "$RULE_DATA" | jq -r '.logSourceService')
+          
+          detection:
+            query:
+              before: |
+                $(echo "$RULE_DATA" | jq -r '.detectionQueryBefore')
+              after: |
+                $(echo "$RULE_DATA" | jq -r '.detectionQueryAfter')
+            condition: $(echo "$RULE_DATA" | jq -r '.detectionQueryCondition')
+            suppress: $(echo "$RULE_DATA" | jq -r '.detectionQuerySuppress // "null"')
+          
+          severity: $(echo "$RULE_DATA" | jq -r '.severity')
+          outcome: $(echo "$RULE_DATA" | jq -r '.outcome')
+          
+          review:
+            last_reviewed: $(echo "$RULE_DATA" | jq -r '.reviewLastReviewed')
+            next_review: $(echo "$RULE_DATA" | jq -r '.reviewNextReview')
+          
+          expiry_date: $(echo "$RULE_DATA" | jq -r '.expiryDate // "null"')
+          EOF
+          
+          echo "Created rule file: SIEM/Rules/${RULE_NAME}.yml"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Add detection rule: ${{ steps.extract.outputs.rule-name }}"
+          title: "Detection Rule: ${{ steps.extract.outputs.rule-name }}"
+          body: |
+            This PR adds a new detection rule based on issue #${{ github.event.issue.number }}
+            
+            **Rule Name:** ${{ steps.extract.outputs.rule-name }}
+            
+            Closes #${{ github.event.issue.number }}
+          branch: detection-rule-${{ github.event.issue.number }}
+          delete-branch: true
+          labels: detection-rule
+
+      - name: Comment on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Detection rule data has been extracted and a pull request has been created. Please review the PR to approve the new rule.'
+            })
