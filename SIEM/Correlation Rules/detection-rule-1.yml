@@ -1,0 +1,30 @@
+name: Detection Rule 1
+status: Enabled-PreProd
+description: Detection Rule 1
+references:
+  - https://test.com
+  - https://test2.org
+author:
+  by: authoruser1
+  date: "2025-12-01"
+modified:
+  by: null
+  date: null
+tags:
+  - attack.T1234
+  - attack.T4567
+log_source:
+  vendor: Vendor1
+  service: Service1
+detection:
+  query:
+    before: Query Before
+    after: Query After
+  condition: trigger on all
+  suppress: Suppress 2 min
+severity: Medium
+outcome: alert
+review:
+  last_reviewed: "2025-12-01"
+  next_review: "2026-12-01"
+expiry_date: null
