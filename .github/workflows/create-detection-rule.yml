@@ -1,4 +1,4 @@
-name: Process Detection Rule Request
+name: Create Detection Rule
 
 on:
   issues:
