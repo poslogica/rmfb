@@ -103,97 +103,49 @@ jobs:
           
           echo "Updating existing rule: $RULE_PATH"
           
-          # Read existing rule
-          EXISTING_RULE=$(cat "$RULE_PATH")
+          # Create backup
+          cp "$RULE_PATH" "${RULE_PATH}.backup"
           
-          # Update fields conditionally using yq
-          # Only update if new value is provided (not null)
+          # Build update object with only provided fields
+          UPDATE_JSON=$(echo "$MOD_DATA" | jq '{
+            status: (.ruleStatus // empty | if . == "" then null else . end),
+            description: (.ruleDescription // empty | if . == "" then null else . end),
+            references: (.references // empty | if . == [] or . == null then null else . end),
+            modified: {
+              by: .modifiedBy,
+              date: .modifiedDate
+            },
+            tags: (.tags // empty | if . == [] or . == null then null else . end),
+            log_source: {
+              vendor: (.logSourceVendor // empty | if . == "" then null else . end),
+              service: (.logSourceService // empty | if . == "" then null else . end)
+            },
+            detection: {
+              query: {
+                before: (.detectionQueryBefore // empty | if . == "" then null else . end),
+                after: (.detectionQueryAfter // empty | if . == "" then null else . end)
+              },
+              condition: (.detectionQueryCondition // empty | if . == "" then null else . end),
+              suppress: (.detectionQuerySuppress // empty | if . == "" then null else . end)
+            },
+            severity: (.severity // empty | if . == "" then null else . end),
+            outcome: (.outcome // empty | if . == "" then null else . end),
+            review: {
+              last_reviewed: .reviewLastReviewed,
+              next_review: .reviewNextReview
+            },
+            expiry_date: (.expiryDate // empty | if . == "" then null else . end)
+          } | with_entries(select(.value != null))')
           
-          # Update status if provided
-          STATUS=$(echo "$MOD_DATA" | jq -r '.ruleStatus // empty')
-          if [ -n "$STATUS" ]; then
-            yq eval ".status = \"$STATUS\"" -i "$RULE_PATH"
-          fi
+          echo "Update data (fields with values only):"
+          echo "$UPDATE_JSON" | jq .
           
-          # Update description if provided
-          DESC=$(echo "$MOD_DATA" | jq -r '.ruleDescription // empty')
-          if [ -n "$DESC" ]; then
-            echo "$DESC" | yq eval ".description = \"$(cat -)\"" -i "$RULE_PATH"
-          fi
+          # Merge updates with existing file using yq
+          echo "$UPDATE_JSON" | yq eval-all 'select(fileIndex == 1) * select(fileIndex == 0)' "${RULE_PATH}" - > "${RULE_PATH}.new"
+          mv "${RULE_PATH}.new" "$RULE_PATH"
           
-          # Update references if provided
-          REFS=$(echo "$MOD_DATA" | jq -r '.references // empty | if . then . else empty end | @json')
-          if [ -n "$REFS" ]; then
-            echo "$REFS" | yq eval ".references = (env(REFS) | fromjson)" -i "$RULE_PATH"
-          fi
-          
-          # Update modified information
-          MOD_BY=$(echo "$MOD_DATA" | jq -r '.modifiedBy')
-          MOD_DATE=$(echo "$MOD_DATA" | jq -r '.modifiedDate')
-          yq eval ".modified.by = \"$MOD_BY\"" -i "$RULE_PATH"
-          yq eval ".modified.date = \"$MOD_DATE\"" -i "$RULE_PATH"
-          
-          # Update tags if provided
-          TAGS=$(echo "$MOD_DATA" | jq -r '.tags // empty | if . then . else empty end | @json')
-          if [ -n "$TAGS" ]; then
-            echo "$TAGS" | yq eval ".tags = (env(TAGS) | fromjson)" -i "$RULE_PATH"
-          fi
-          
-          # Update log sources if provided
-          VENDOR=$(echo "$MOD_DATA" | jq -r '.logSourceVendor // empty')
-          if [ -n "$VENDOR" ]; then
-            yq eval ".log_source.vendor = \"$VENDOR\"" -i "$RULE_PATH"
-          fi
-          
-          SERVICE=$(echo "$MOD_DATA" | jq -r '.logSourceService // empty')
-          if [ -n "$SERVICE" ]; then
-            yq eval ".log_source.service = \"$SERVICE\"" -i "$RULE_PATH"
-          fi
-          
-          # Update detection queries if provided
-          QUERY_BEFORE=$(echo "$MOD_DATA" | jq -r '.detectionQueryBefore // empty')
-          if [ -n "$QUERY_BEFORE" ]; then
-            echo "$QUERY_BEFORE" | yq eval ".detection.query.before = \"$(cat -)\"" -i "$RULE_PATH"
-          fi
-          
-          QUERY_AFTER=$(echo "$MOD_DATA" | jq -r '.detectionQueryAfter // empty')
-          if [ -n "$QUERY_AFTER" ]; then
-            echo "$QUERY_AFTER" | yq eval ".detection.query.after = \"$(cat -)\"" -i "$RULE_PATH"
-          fi
-          
-          CONDITION=$(echo "$MOD_DATA" | jq -r '.detectionQueryCondition // empty')
-          if [ -n "$CONDITION" ]; then
-            yq eval ".detection.condition = \"$CONDITION\"" -i "$RULE_PATH"
-          fi
-          
-          SUPPRESS=$(echo "$MOD_DATA" | jq -r '.detectionQuerySuppress // empty')
-          if [ -n "$SUPPRESS" ]; then
-            yq eval ".detection.suppress = \"$SUPPRESS\"" -i "$RULE_PATH"
-          fi
-          
-          # Update severity if provided
-          SEVERITY=$(echo "$MOD_DATA" | jq -r '.severity // empty')
-          if [ -n "$SEVERITY" ]; then
-            yq eval ".severity = \"$SEVERITY\"" -i "$RULE_PATH"
-          fi
-          
-          # Update outcome if provided
-          OUTCOME=$(echo "$MOD_DATA" | jq -r '.outcome // empty')
-          if [ -n "$OUTCOME" ]; then
-            yq eval ".outcome = \"$OUTCOME\"" -i "$RULE_PATH"
-          fi
-          
-          # Update review dates
-          LAST_REVIEWED=$(echo "$MOD_DATA" | jq -r '.reviewLastReviewed')
-          NEXT_REVIEW=$(echo "$MOD_DATA" | jq -r '.reviewNextReview')
-          yq eval ".review.last_reviewed = \"$LAST_REVIEWED\"" -i "$RULE_PATH"
-          yq eval ".review.next_review = \"$NEXT_REVIEW\"" -i "$RULE_PATH"
-          
-          # Update expiry date if provided
-          EXPIRY=$(echo "$MOD_DATA" | jq -r '.expiryDate // empty')
-          if [ -n "$EXPIRY" ]; then
-            yq eval ".expiry_date = \"$EXPIRY\"" -i "$RULE_PATH"
-          fi
+          # Clean up backup
+          rm "${RULE_PATH}.backup"
           
           echo ""
           echo "Updated YAML content:"
