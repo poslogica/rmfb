@@ -1,0 +1,32 @@
+name: Test Rule Name
+status: Disabled-PreProd
+description: Test description
+references:
+  - '```text'
+  - https://hello.world
+  - '```'
+author:
+  by: testuser1
+  date: "2025-11-30"
+modified:
+  by: null
+  date: null
+tags:
+  - '```text'
+  - attack.TS123
+  - '```'
+log_source:
+  vendor: TestVendor
+  service: TesService
+detection:
+  query:
+    before: query before
+    after: Query After
+  condition: On first match
+  suppress: 5 minutes
+severity: Low
+outcome: No investigation
+review:
+  last_reviewed: "2025-11-30"
+  next_review: "2026-11-30"
+expiry_date: null
